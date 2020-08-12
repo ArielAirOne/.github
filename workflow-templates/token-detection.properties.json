@@ -1,0 +1,5 @@
+{
+    "name": "Token Detection",
+    "description": "Run gitleaks to detect tokens in the repository",
+    "iconName": "key"
+}

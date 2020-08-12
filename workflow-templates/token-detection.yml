@@ -1,0 +1,16 @@
+name: Token Detection
+
+on:
+  - push
+
+jobs:
+  sync:
+    runs-on: [self-hosted, linux]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+            fetch-depth: '0'
+      # you may add `.gitleaks.toml` to the root of repository to configure
+      # https://github.com/zricethezav/gitleaks/wiki/Configuration
+      - name: gitleaks-action
+        uses: zricethezav/gitleaks-action@master
