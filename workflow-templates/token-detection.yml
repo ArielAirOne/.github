@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-            fetch-depth: '0'
+          fetch-depth: '0'
       # you may add `.gitleaks.toml` to the root of repository to configure
       # https://github.com/zricethezav/gitleaks/wiki/Configuration
       - name: gitleaks-action
