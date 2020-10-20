@@ -1,0 +1,5 @@
+{
+    "name": "Git commit message linker",
+    "description": "Link Trac ticket to Git commit, and vice versa.",
+    "iconName": "ticket"
+}

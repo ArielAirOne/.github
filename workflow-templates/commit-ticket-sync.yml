@@ -1,0 +1,27 @@
+name: Git commit message linker
+
+on:
+  push:
+    - main
+    # add release branches if necessary
+  pull_request:
+    - main
+    # add release branches if necessary
+
+jobs:
+  detect:
+    runs-on: [self-hosted, linux]
+    steps:
+      - name: Checkout git commit message linker # Private repo, token is required
+        uses: actions/checkout@v2
+        with:
+          repository: arielairone/git-commit-message-linker
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          path: .git-commit-message-linker
+      - name: Sync commit message to ticket
+        uses: ./.git-commit-message-linker
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          trac-account: ${{secrets.TRAC_BOT_USER}}
+          trac-password: ${{secrets.TRAC_BOT_PASSWORD}}
+          trac-domain: legion.ariel-networks.com
