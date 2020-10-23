@@ -2,14 +2,16 @@ name: Git commit message linker
 
 on:
   push:
-    - main
-    # add release branches if necessary
+    branches:
+      - main
+      # add release branches if necessary
   pull_request:
-    - main
-    # add release branches if necessary
+    branches:
+      - main
+      # add release branches if necessary
 
 jobs:
-  detect:
+  link:
     runs-on: [self-hosted, linux]
     steps:
       - name: Checkout git commit message linker # Private repo, token is required
