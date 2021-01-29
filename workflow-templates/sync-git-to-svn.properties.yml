@@ -1,0 +1,5 @@
+{
+    "name": "Sync git commit to svn",
+    "description": "Please adopt SYNC-POINT protocol to apply this action",
+    "iconName": "git-2-svn"
+}

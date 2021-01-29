@@ -1,0 +1,38 @@
+name: 'sync-to-svn'
+on: push
+
+jobs:
+  sync-steps: 
+    runs-on: [self-hosted, linux]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: synchronize SYCN-POINTs to svn
+        id: git-2-svn
+        env: 
+          SVN_REPO_URL:
+          SVN_CMD: "svn --username=${{ secrets.TRAC_BOT_USER }} --password=${{ secrets.TRAC_BOT_PASSWORD }}"
+        run: |
+          [ -z "${SVN_REPO_URL}" ] && echo "Please set SVN REPO_URL in this action!" && exit -1
+          echo "Subversion version: $(svn --version | head -1)"
+          ${SVN_CMD} checkout ${SVN_REPO_URL} SVN_REPO
+          sync_point_done=$(${SVN_CMD} log $SVN_REPO_URL | grep 'SYNC\-POINT\-[0-9]\+:' | head -1 | sed -r 's/SYNC-POINT-([0-9]+):.*/\1/g')
+          [ -z "${sync_point_done}" ] && echo "ERROR-1: Subversion log don't have sync point history." && exit 1
+          sync_point_done_checksum=$(git log --grep "SYNC-POINT-${sync_point_done}:" -1 |grep commit | awk '{print $NF}')
+          next_sync_point_checksum=$(git log --grep 'SYNC-POINT-[0-9]\+:' -1 |grep commit | awk '{print $NF}')
+          [ -z "${next_sync_point_checksum}" ] && echo "ERROR-2: Git log don't have sync poiint history." && exit 2
+          next_sync_point=$(git log --format=%B -1 ${next_sync_point_checksum} | sed -r 's/SYNC-POINT-([0-9]+):.*/\1/g')
+          echo "DEBUG: SYNC-POINT: ${sync_point_done} -> ${next_sync_point} || commit-checksum: ${sync_point_done_checksum} -> ${next_sync_point_checksum}"
+          if [ $sync_point_done -eq $next_sync_point ]; then
+            echo "SYNC-POINT are same: $sync_point_done.\nIf you want to update current commits to SVN repo, please amend or add new commit like SYNC-POINT-1234: xxxx"
+          elif [ $sync_point_done -gt $next_sync_point ]; then
+            echo "ERROR-3: Subversion SYNC-POINT-${sync_point_done} is newer than Git: SYNC-POINT-${next_sync_point}." && exit 3
+          else
+            git diff $sync_point_done_checksum..$next_sync_point_checksum > thePatch
+            cd SVN_REPO
+            ${SVN_CMD} patch ../thePatch
+            ${SVN_CMD} commit -m "SYNC-POINT-${next_sync_point}: See change: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/${sync_point_done_checksum}..${next_sync_point_checksum}"
+            ${SVN_CMD} update && ${SVN_CMD} update
+            echo "Updated! Check svn repo: ${SVN_REPO_URL}"
+          fi
