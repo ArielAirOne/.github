@@ -1,0 +1,25 @@
+name: Sync-BRANCH-to-svn # TODO-change
+on:
+  push: YOUR_SPECIFIC_BRANCH #TODO-Change: one config works for ONE specific branch
+
+jobs:
+  sync-git-to-svn: # make sure the action works on a clean machine without building
+    runs-on: [self-hosted, linux]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js (.nvmrc)
+        uses: actions/setup-node@v2
+      - name: Checkout git sync-git-svn-action
+        uses: actions/checkout@v2
+        with:
+          repository: arielairone/sync-git-svn-action
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          path: .sync-git-svn-action
+      - name: Sync commit from git to svn
+        uses: ./.sync-git-svn-action
+        with:
+          svn-user: ${{ secrets.TRAC_BOT_USER }}
+          svn-password: ${{ secrets.TRAC_BOT_PASSWORD }}
+          svn-url: ${{ YOUR_SPECIFIC_SVN_BRANCH_URL }} # TODO-change: url likes: 'https://legion.ariel-networks.com/svn/agn/branches/axq0811/aqualog_analyze/'
